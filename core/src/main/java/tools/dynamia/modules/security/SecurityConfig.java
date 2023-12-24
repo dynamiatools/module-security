@@ -14,7 +14,7 @@
 
 package tools.dynamia.modules.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -68,7 +68,7 @@ public class SecurityConfig {
 
     private LoggingService logger = new SLF4JLoggingService(SecurityConfig.class);
 
-    @Autowired(required = false)
+
     public SecurityConfig(List<IgnoringSecurityMatcher> ignorings,
                           List<SecurityConfigurationInterceptor> configInterceptors,
                           MessageService messageService) {
@@ -78,7 +78,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserService userService(CrudService crudService){
+    public UserService userService(CrudService crudService) {
         return new UserServiceImpl(crudService);
     }
 
@@ -113,7 +113,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           UserDetailsService userDetailsService,
+                                           SecurityService userDetailsService,
                                            AuthenticationManager authMgr,
                                            SavedRequestAwareAuthenticationSuccessHandler successHandler,
                                            HandlerMappingIntrospector introspector) throws Exception {
@@ -175,8 +175,9 @@ public class SecurityConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(20);
+        return new BCryptPasswordEncoder(5);
     }
 
 

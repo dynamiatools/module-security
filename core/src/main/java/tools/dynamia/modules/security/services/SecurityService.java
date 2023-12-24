@@ -14,6 +14,7 @@
 
 package tools.dynamia.modules.security.services;
 
+import org.springframework.security.core.userdetails.UserDetailsService;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
 
@@ -22,7 +23,7 @@ import java.util.List;
 /**
  * The SeguridadService interface provides various methods for managing security-related operations.
  */
-public interface SecurityService {
+public interface SecurityService extends UserDetailsService {
 
 
     User createUser(User usuario);

@@ -75,21 +75,13 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
 
     @Override
     public User loadUserByUsername(String username) {
-        User user = null;
-
-        if (username.contains("@")) {
-            user = crudService().findSingle(User.class, "email", QueryConditions.eq(username));
-        }
+        log("Loading user by username: " + username);
+        var user = crudService().findSingle(User.class, "username", QueryConditions.eq(username));
 
         if (user == null) {
-            user = crudService().findSingle(User.class, "username", QueryConditions.eq(username));
+            throw new UsernameNotFoundException("User with username " + username + " not found");
         }
-
-        if (user != null) {
-            return user;
-        } else {
-            throw new UsernameNotFoundException("Usuario " + username + " no encontrado");
-        }
+        return user;
     }
 
     @Override
@@ -150,6 +142,7 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
             admin.setUsername("admin");
             admin.setEmail("admin@admin.com");
             admin.setPassword("adminadmin");
+            admin.setCreator("admin");
             createUser(admin);
             UserProfile profile = new UserProfile(profileService.getAdminProfile(), admin);
             crudService().create(profile);

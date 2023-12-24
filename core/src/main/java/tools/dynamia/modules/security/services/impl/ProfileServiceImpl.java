@@ -94,13 +94,12 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
 
     public List<Permission> getPermissions(Long accountId, User user, String permissionType) {
-        QueryBuilder query = QueryBuilder.select("p").from(Permission.class, "p")
-                .innerJoin("p.profile.users users")
-                .where("users.user = :usuario")
+        QueryBuilder query = QueryBuilder.select().from(Permission.class, "p")
+                .where("p.profile.id in (select up.profile.id from UserProfile up where up.user = :user)")
                 .and("p.accountId = :accountId ");
 
         if (permissionType != null) {
-            query.and("p.tipo = :tipo");
+            query.and("p.type = :type");
         }
 
         QueryParameters params = QueryParameters.with("user", user)
@@ -115,6 +114,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
 
     public List<Permission> getPermissions(Long accountId, User user) {
+        logger.info("Loading permissions for user: "+user);
         return getPermissions(accountId, user, null);
     }
 
@@ -126,6 +126,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (p == null && autocreate) {
             p = new Profile();
             p.setName(name);
+            p.setCreator("auto");
             crudService.create(p);
         }
 

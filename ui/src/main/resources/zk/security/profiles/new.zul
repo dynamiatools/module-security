@@ -68,7 +68,7 @@
                     </listhead>
                     <template name="model" var="p">
                         <listitem>
-                            <listcell label="@load(p.description)" style="@load(p.nivelStyle)"/>
+                            <listcell label="@load(p.description)" style="@load(p.levelStyle)"/>
                             <listcell label="@load(p.value)"/>
                             <listcell label="@load(p.type)"/>
                             <listcell>

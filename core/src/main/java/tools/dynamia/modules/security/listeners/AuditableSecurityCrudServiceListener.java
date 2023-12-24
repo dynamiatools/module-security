@@ -13,6 +13,7 @@
 
 package tools.dynamia.modules.security.listeners;
 
+import org.springframework.beans.factory.support.ScopeNotActiveException;
 import tools.dynamia.domain.Auditable;
 import tools.dynamia.domain.util.CrudServiceListenerAdapter;
 import tools.dynamia.integration.sterotypes.Listener;
@@ -21,16 +22,20 @@ import tools.dynamia.modules.security.CurrentUser;
 @Listener
 public class AuditableSecurityCrudServiceListener extends CrudServiceListenerAdapter<Auditable> {
 
-	@Override
-	public void beforeCreate(Auditable ent) {
-		if (ent.getCreator() == null || ent.getCreator().isEmpty()) {
-			ent.setCreator(CurrentUser.get().getUsername());
-		}
-	}
+    @Override
+    public void beforeCreate(Auditable ent) {
+        try {
+            if (ent.getCreator() == null || ent.getCreator().isEmpty()) {
+                ent.setCreator(CurrentUser.get().getUsername());
+            }
+        } catch (ScopeNotActiveException e) {
+            //ignore
+        }
+    }
 
-	@Override
-	public void beforeUpdate(Auditable entity) {
-		entity.setLastUpdater(CurrentUser.get().getUsername());
-	}
+    @Override
+    public void beforeUpdate(Auditable entity) {
+        entity.setLastUpdater(CurrentUser.get().getUsername());
+    }
 
 }

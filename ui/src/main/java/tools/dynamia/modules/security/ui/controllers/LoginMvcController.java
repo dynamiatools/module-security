@@ -22,6 +22,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+import tools.dynamia.commons.logger.LoggingService;
+import tools.dynamia.commons.logger.SLF4JLoggingService;
 import tools.dynamia.integration.Containers;
 import tools.dynamia.modules.security.LoginControllerInterceptor;
 import tools.dynamia.modules.security.listeners.LoginListener;
@@ -36,9 +38,12 @@ import java.util.Map;
 @Controller
 public class LoginMvcController {
 
+    private LoggingService logger = new SLF4JLoggingService(LoginMvcController.class);
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public ModelAndView login(HttpServletRequest request) {
+
+        logger.info("Starting login page");
 
         ModelAndView mv = new ModelAndView("login");
 

@@ -51,14 +51,17 @@ public class CurrentUser implements Serializable {
     private String ip;
     private String browser;
     private Date timestamp;
-    private Map<String, Long> permissions;
+    private Map<String, Long> permissionsCache;
+    private List<Permission> permissions;
 
     public static CurrentUser get() {
         try {
             CurrentUser currentUser = Containers.get().findObject(CurrentUser.class);
             return currentUser;
         } catch (Exception e) {
-            return null;
+            var mock = new CurrentUser();
+            mock.init(new User("anonymous"));
+            return mock;
         }
     }
 
@@ -105,7 +108,7 @@ public class CurrentUser implements Serializable {
 
     public boolean hasPermission(String permiso) {
         if (isLogged()) {
-            return permissions != null && permissions.containsKey(permiso);
+            return permissionsCache != null && permissionsCache.containsKey(permiso);
         } else {
             return false;
         }
@@ -163,20 +166,22 @@ public class CurrentUser implements Serializable {
     }
 
     private void loadPermissions() {
-        logger.info("Cargando permisos de " + user);
-        var perfilesService = Containers.get().findObject(ProfileService.class);
-        permissions = new HashMap<>();
-        List<Permission> permisos = perfilesService.getPermissions(user.getAccountId(), user);
-        if (permisos != null) {
-            permisos.forEach(permiso -> this.permissions.put(permiso.getValue(), permiso.getId()));
+        if (user != null && user.getId() != null) {
+            logger.info("Cargando permisos de " + user);
+            var profileService = Containers.get().findObject(ProfileService.class);
+            permissionsCache = new HashMap<>();
+            this.permissions = profileService.getPermissions(user.getAccountId(), user);
+            if (permissions != null) {
+                permissions.forEach(permiso -> this.permissionsCache.put(permiso.getValue(), permiso.getId()));
+            }
+            logger.info("Permisos especiales de " + user + " OK");
         }
-        logger.info("Permisos especiales de " + user + " OK");
     }
 
     public void clear() {
         user = null;
         ip = null;
-        permissions = null;
+        permissionsCache = null;
         browser = null;
         timestamp = null;
     }
@@ -187,5 +192,9 @@ public class CurrentUser implements Serializable {
 
     public boolean isNotAdmin() {
         return !isAdmin();
+    }
+
+    public List<Permission> getPermissions() {
+        return permissions;
     }
 }

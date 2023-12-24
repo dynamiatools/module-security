@@ -43,11 +43,11 @@ import java.util.List;
 @Entity
 @Table(name = "sec_profiles")
 @BatchSize(size = 20)
-@tools.dynamia.domain.OrderBy("nombre")
+@tools.dynamia.domain.OrderBy("name")
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Profile extends BaseEntity implements GrantedAuthority,  Cloneable, AccountAware {
+public class Profile extends BaseEntity implements GrantedAuthority, Cloneable, AccountAware {
 
     @NotNull(message = "Ingrese nombre del perfil")
     private String name;
@@ -59,9 +59,7 @@ public class Profile extends BaseEntity implements GrantedAuthority,  Cloneable,
     @OrderBy("value")
     @JsonIgnore
     private List<Permission> permissions = new ArrayList<>();
-    @OneToMany(mappedBy = "profile")
-    @JsonIgnore
-    private List<UserProfile> users = new ArrayList<>();
+
     private Long accountId;
 
     public String getDescription() {
@@ -111,13 +109,6 @@ public class Profile extends BaseEntity implements GrantedAuthority,  Cloneable,
         this.permissions = permisos;
     }
 
-    public List<UserProfile> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<UserProfile> usuarios) {
-        this.users = usuarios;
-    }
 
     @Override
     public String getAuthority() {

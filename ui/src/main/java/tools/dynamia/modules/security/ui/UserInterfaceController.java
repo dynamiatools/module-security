@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 import tools.dynamia.commons.logger.LoggingService;
 import tools.dynamia.commons.logger.SLF4JLoggingService;
-import tools.dynamia.integration.Containers;
 import tools.dynamia.modules.security.CurrentUser;
 import tools.dynamia.modules.security.domain.Permission;
 import tools.dynamia.modules.security.services.ProfileService;
@@ -37,22 +36,22 @@ public class UserInterfaceController extends HashMap<String, Boolean> implements
 
 
     private final LoggingService logger = new SLF4JLoggingService(UserInterfaceController.class);
-    private List<Permission> permisosAcceso;
+    private List<Permission> accessPermissions;
     private boolean adminUser;
 
 
     public void init() {
         try {
-            if (permisosAcceso == null || permisosAcceso.isEmpty()) {
-                var perfiles = Containers.get().findObject(ProfileService.class);
+            if (accessPermissions == null || accessPermissions.isEmpty()) {
                 if (CurrentUser.get().isLogged()) {
-                    var usuario = CurrentUser.get().getUser();
                     adminUser = CurrentUser.get().hasProfile("ROLE_ADMIN");
-                    permisosAcceso = perfiles.getPermissions(usuario.getAccountId(), usuario.getUsername(), ProfileService.ACCESS_PERMISSION);
+                    accessPermissions = CurrentUser.get().getPermissions()
+                            .stream().filter(p -> ProfileService.ACCESS_PERMISSION.equals(p.getType()))
+                            .toList();
                 }
             }
         } catch (Exception e) {
-            logger.error("Error inicializando controlador de interaz de usuario", e);
+            logger.error("Error UI Access controller", e);
         }
     }
 
@@ -76,9 +75,9 @@ public class UserInterfaceController extends HashMap<String, Boolean> implements
         }
 
         key = key.toLowerCase();
-        for (Permission permiso : permisosAcceso) {
-            if (permiso.getValue() != null) {
-                var valor = permiso.getValue().toLowerCase();
+        for (Permission p : accessPermissions) {
+            if (p.getValue() != null) {
+                var valor = p.getValue().toLowerCase();
                 if (valor.equals(key) || valor.startsWith(key)) {
                     return true;
                 }

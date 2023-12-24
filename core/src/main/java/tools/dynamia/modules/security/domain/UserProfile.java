@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.BatchSize;
 import tools.dynamia.domain.jpa.BaseEntity;
@@ -34,7 +35,7 @@ import tools.dynamia.modules.saas.api.AccountAware;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserProfile extends BaseEntity implements AccountAware {
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(updatable = false)
     private Profile profile;
     @ManyToOne

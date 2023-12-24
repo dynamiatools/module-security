@@ -22,11 +22,11 @@ import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.BatchSize;
@@ -34,10 +34,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import tools.dynamia.domain.ValidationError;
 import tools.dynamia.domain.jpa.BaseEntity;
+import tools.dynamia.domain.query.QueryConditions;
 import tools.dynamia.domain.query.QueryParameters;
 import tools.dynamia.domain.util.BasicEntityJsonDeserializer;
 import tools.dynamia.domain.util.BasicEntityJsonSerializer;
 import tools.dynamia.domain.util.DomainUtils;
+import tools.dynamia.domain.util.QueryBuilder;
 import tools.dynamia.modules.entityfile.domain.EntityFile;
 import tools.dynamia.modules.saas.api.AccountAware;
 
@@ -75,7 +77,7 @@ public class User extends BaseEntity implements UserDetails, AccountAware {
     private String fullname;
 
     private String email;
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<UserProfile> profiles = new ArrayList<>();
     @Column(unique = true)
@@ -94,12 +96,32 @@ public class User extends BaseEntity implements UserDetails, AccountAware {
 
     private Long accountId;
 
+
+    @Transient
+    private List<GrantedAuthority> grantedAuthorities;
+
+    private void initProfilesCache() {
+        if (grantedAuthorities == null && getId() != null) {
+            grantedAuthorities = DomainUtils.lookupCrudService()
+                    .executeQuery(QueryBuilder.select("profile")
+                            .from(UserProfile.class, "up")
+                            .where("up.user.id", QueryConditions.eq(getId())));
+        }
+    }
+
     public static List<User> findActivosByAccount(Long accountId) {
         return DomainUtils.lookupCrudService().find(User.class, QueryParameters.with("enabled", true)
                 .add("accountId", accountId)
                 .orderBy("nombreReal"));
     }
 
+    public User() {
+
+    }
+
+    public User(String username) {
+        this.username = username;
+    }
 
     public EntityFile getPhoto() {
         return photo;
@@ -261,11 +283,8 @@ public class User extends BaseEntity implements UserDetails, AccountAware {
     @Override
     @JsonIgnore
     public List<GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> auths = new ArrayList<>();
-        for (UserProfile userProfile : profiles) {
-            auths.add(userProfile.getProfile());
-        }
-        return auths;
+        initProfilesCache();
+        return grantedAuthorities;
     }
 
     public Profile getProfile(String name) {

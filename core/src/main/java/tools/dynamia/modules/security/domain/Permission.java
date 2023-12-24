@@ -110,7 +110,7 @@ public class Permission extends SimpleEntity implements  Cloneable, AccountAware
         this.level = nivel;
     }
 
-    public String getNivelStyle() {
+    public String getLevelStyle() {
         if (level > 0) {
             return "padding-left: " + (level * 10) + "px";
         } else {

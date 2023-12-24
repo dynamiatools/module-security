@@ -20,14 +20,14 @@ fields:
       imageOnly: true
       shared: true
 
-  prvFoto:
+  prvPhoto:
     label: Preview
     component: entityfileImage
     params:
       thumbnail: true
       thumbnailWidth: 80
       thumbnailHeight: 80
-      bind: foto
+      bind: photo
 
 
 layout:
