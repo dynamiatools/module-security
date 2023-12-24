@@ -38,7 +38,7 @@ public class AsignedUserProfileVM extends AbstractService {
     private final SecurityService service = Containers.get().findObject(SecurityService.class);
     private final AccountServiceAPI accountServiceAPI = Containers.get().findObject(AccountServiceAPI.class);
     private User model;
-    private List<Profile> perfiles;
+    private List<Profile> profiles;
     private Window parentWindow;
 
 
@@ -50,27 +50,27 @@ public class AsignedUserProfileVM extends AbstractService {
             this.model = crudService().reload(model);
         }
         this.parentWindow = ZKUtil.getExecutionParentWindow();
-        perfiles = new ArrayList<>(service.getProfilesByAccountId(accountServiceAPI.getCurrentAccountId()));
-        List<Profile> perfilesAsignados = this.model.getProfiles().stream().map(UserProfile::getProfile).toList();
-        perfiles.removeAll(perfilesAsignados);
+        profiles = new ArrayList<>(service.getProfilesByAccountId(accountServiceAPI.getCurrentAccountId()));
+        List<Profile> asigned = this.model.getProfiles().stream().map(UserProfile::getProfile).toList();
+        profiles.removeAll(asigned);
     }
 
     @Command
     @NotifyChange("*")
-    public void addPerfil(@BindingParam("perfil") Profile perfil) {
-        if (perfil != null) {
-            model.addProfile(perfil);
-            perfiles.remove(perfil);
+    public void addProfile(@BindingParam("profile") Profile profile) {
+        if (profile != null) {
+            model.addProfile(profile);
+            profiles.remove(profile);
         }
     }
 
     @Command
     @NotifyChange("*")
-    public void removePerfil(@BindingParam("perfil") UserProfile perfilUsuario) {
-        if (perfilUsuario != null) {
-            Profile perfil = perfilUsuario.getProfile();
-            model.removePerfil(perfilUsuario);
-            perfiles.add(perfil);
+    public void removeProfile(@BindingParam("profile") UserProfile userProfile) {
+        if (userProfile != null) {
+            Profile perfil = userProfile.getProfile();
+            model.removePerfil(userProfile);
+            profiles.add(perfil);
         }
     }
 
@@ -91,25 +91,9 @@ public class AsignedUserProfileVM extends AbstractService {
         return model;
     }
 
-    public List<Profile> getPerfiles() {
-        return perfiles;
+    public List<Profile> getProfiles() {
+        return profiles;
     }
 
-    public String getDisponiblesLabel() {
-        String disponibles = UIMessages.getLocalizedMessage("Disponibles");
-        if (perfiles == null || perfiles.isEmpty()) {
-            return disponibles;
-        } else {
-            return disponibles + " (" + perfiles.size() + ")";
-        }
-    }
 
-    public String getAsignadosLabel() {
-        String asignados = UIMessages.getLocalizedMessage("Asignados");
-        if (model.getProfiles() == null || model.getProfiles().isEmpty()) {
-            return asignados;
-        } else {
-            return asignados + " (" + model.getProfiles().size() + ")";
-        }
-    }
 }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2009 - 2021 Dynamia Soluciones IT SAS  All Rights Reserved
+  ~
+  ~ Todos los Derechos Reservados  2009 - 2021
+  ~
+  ~ Este archivo es propiedad de Dynamia Soluciones IT NIT 900302344-1 en Colombia / Sur America,
+  ~ esta estrictamente prohibida su copia o distribución sin previa autorización del propietario.
+  ~ Puede contactarnos a info@dynamiasoluciones.com o visitar nuestro sitio web
+  ~ https://www.dynamiasoluciones.com
+  ~
+  ~ Autor: Ing. Mario Serrano Leones <mario@dynamiasoluciones.com>
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>tools.dynamia.modules</groupId>
+    <artifactId>tools.dynamia.modules.security.parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0</version>
+    <name>DynamiaModules - Security (${project.version})</name>
+    <url>https://www.dynamiasoluciones.com</url>
+    <description>Usuarios, perfiles y tokens de acceso</description>
+
+
+    <modules>
+        <module>core</module>
+        <module>ui</module>
+    </modules>
+
+
+    <properties>
+        <dynamiatools.version>5.0.8</dynamiatools.version>
+        <springboot.version>3.0.11</springboot.version>
+        <saas.version>3.0.1</saas.version>
+        <entityfiles.version>7.0.1</entityfiles.version>
+
+        <java.version>17</java.version>
+        <maven.compiler>3.11.0</maven.compiler>
+        <source.encoding>UTF-8</source.encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${source.encoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+</project>

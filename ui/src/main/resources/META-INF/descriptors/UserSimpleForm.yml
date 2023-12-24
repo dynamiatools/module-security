@@ -1,0 +1,37 @@
+view: form
+id: userProfile
+autofields: false
+
+fields:
+
+  fullname:
+    component: textbox
+  email:
+    component: textbox
+  phoneNumber:
+    component: textbox
+  mobileNumber:
+    component: textbox
+
+  photo:
+    label: Photo
+    component: entityfileUploadlink
+    params:
+      imageOnly: true
+      shared: true
+
+  prvFoto:
+    label: Preview
+    component: entityfileImage
+    params:
+      thumbnail: true
+      thumbnailWidth: 80
+      thumbnailHeight: 80
+      bind: foto
+
+
+layout:
+  columns: 2
+
+
+

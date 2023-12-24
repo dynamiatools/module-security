@@ -64,11 +64,11 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
     private final List<Permission> toDelete = new ArrayList<>();
     private Profile model;
     private Object selectedItem;
-    private Permission selectedPermiso;
+    private Permission selectedPermission;
     private DefaultTreeModel treeModel;
 
     private CrudView<Profile> crudView;
-    private List<Permission> permisos;
+    private List<Permission> permissions;
 
 
     @Override
@@ -114,7 +114,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
 
     @Command
     @NotifyChange("*")
-    public void addPermisoAcceso() {
+    public void addAccessPermission() {
         Object value = getSelectedItem();
         if (value instanceof DefaultTreeNode) {
             value = ((DefaultTreeNode) value).getData();
@@ -135,13 +135,13 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
             }
 
         } else if (value instanceof PageAction) {
-            addPermisoAccion((PageAction) value);
+            ddActionPermission((PageAction) value);
         }
         sortPermisos();
     }
 
     private void sortPermisos() {
-        permisos = model.getPermissions().stream().sorted(Comparator.comparing(Permission::getValue)).collect(Collectors.toList());
+        permissions = model.getPermissions().stream().sorted(Comparator.comparing(Permission::getValue)).collect(Collectors.toList());
     }
 
     private void addPermisoPagina(Page pg) {
@@ -157,7 +157,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         }
     }
 
-    private void addPermisoAccion(PageAction action) {
+    private void ddActionPermission(PageAction action) {
         Page page = action.getPage();
         Permission permiso = null;
         if (action.getId() != null) {
@@ -173,7 +173,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
 
 
     @Command
-    public void removePermisoAcceso(@BindingParam("permiso") Permission p) {
+    public void removeAccessPermission(@BindingParam("permission") Permission p) {
 
         if (p != null) {
             UIMessages.showQuestion("Esta seguro que desea eliminar el permiso " + p.getDescription() + "?", () -> {
@@ -262,23 +262,24 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         this.selectedItem = selectedItem;
     }
 
-    public void setSelectedPermiso(Permission selectedPermiso) {
-        this.selectedPermiso = selectedPermiso;
-    }
-
-    public Permission getSelectedPermiso() {
-        return selectedPermiso;
-    }
 
     public DefaultTreeModel getTreeModel() {
         return treeModel;
     }
 
-    public List<Permission> getPermisos() {
-        return permisos;
+    public Permission getSelectedPermission() {
+        return selectedPermission;
     }
 
-    public void setPermisos(List<Permission> permisos) {
-        this.permisos = permisos;
+    public void setSelectedPermission(Permission selectedPermission) {
+        this.selectedPermission = selectedPermission;
+    }
+
+    public List<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
     }
 }

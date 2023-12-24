@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+
+
+<!--
+  ~ Copyright (c) 2009 - 2021 Dynamia Soluciones IT SAS  All Rights Reserved
+  ~
+  ~ Todos los Derechos Reservados  2009 - 2021
+  ~
+  ~ Este archivo es propiedad de Dynamia Soluciones IT NIT 900302344-1 en Colombia / Sur America,
+  ~ esta estrictamente prohibida su copia o distribución sin previa autorización del propietario.
+  ~ Puede contactarnos a info@dynamiasoluciones.com o visitar nuestro sitio web
+  ~ https://www.dynamiasoluciones.com
+  ~
+  ~ Autor: Ing. Mario Serrano Leones <mario@dynamiasoluciones.com>
+  -->
+
+<window xmlns="http://www.zkoss.org/2005/zul" xmlns:n="native" id="usr" apply="org.zkoss.bind.BindComposer"
+        viewModel="@id('vm') @init('tools.dynamia.modules.security.ui.vm.UserProfileVM')">
+
+    <div sclass="row">
+        <div id="datos" sclass="col-xs-12 col-md-6">
+
+            <n:h4 class="panel-title">(${vm.usuario.username})</n:h4>
+
+            <div sclass="pd0 mg0">
+                <viewer descriptorId="userProfile" value="@load(vm.user)" contentVflex="false" vflex="false"
+                        sclass="pd0"/>
+            </div>
+
+        </div>
+
+        <div id="controlacceso" sclass="col-xs-12 col-md-6">
+
+
+            <n:h4 class="panel-title">Credentials</n:h4>
+
+            <div sclass="card">
+                <div sclass="card-body pd10 row" style="padding-bottom: 40px !important;">
+
+                    <div sclass="col-md-12 form-group">
+                        <checkbox checked="@bind(vm.cambiarPassword)" label="Reset Password"/>
+                    </div>
+
+                    <div sclass="col-md-12 form-group">
+                        <n:label>Current Password</n:label>
+                        <textbox zclass="form-control" value="@bind(vm.currentPassword)"
+                                 readonly="@bind(not vm.resetPassword)" type="password"/>
+                    </div>
+
+                    <div sclass="col-md-12 form-group">
+                        <n:label>New password</n:label>
+                        <textbox zclass="form-control" value="@bind(vm.newPassword)" type="password"
+                                 readonly="@bind(not vm.resetPassword)"/>
+                    </div>
+
+                    <div sclass="col-md-12 form-group">
+                        <n:label>Confirma New Password</n:label>
+                        <textbox zclass="form-control" value="@bind(vm.newPassword2)" type="password"
+                                 readonly="@bind(not vm.resetPassword)"/>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div sclass="row">
+
+        <div id="perfiles" sclass="col-xs-12 col-md-6">
+
+            <n:h4 class="panel-title">Assigned Profiles</n:h4>
+
+            <viewer descriptorId="profilesSimple" value="@load(vm.profiles)" height="300px"/>
+        </div>
+
+
+        <div id="acciones" sclass="col-md-12" style="margin-top: 10px">
+            <button zclass="btn btn-primary pull-right" label="Save" iconSclass="fa fa-user"
+                    onClick="@command('save')"/>
+        </div>
+    </div>
+</window>
