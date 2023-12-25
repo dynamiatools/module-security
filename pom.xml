@@ -31,8 +31,8 @@
 
 
     <properties>
-        <dynamiatools.version>5.0.8</dynamiatools.version>
-        <springboot.version>3.0.11</springboot.version>
+        <dynamiatools.version>5.1.0</dynamiatools.version>
+        <springboot.version>3.2.1</springboot.version>
         <saas.version>3.0.1</saas.version>
         <entityfiles.version>7.0.1</entityfiles.version>
 
