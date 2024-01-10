@@ -17,7 +17,7 @@ public class SetupApplicationUserInfoListener implements LoginListener {
             userInfo.setEmail(user.getEmail());
             userInfo.setFullName(user.getFullname());
             userInfo.setUsername(user.getUsername());
-            userInfo.setProfilePath("system/seguridad/miPerfil");
+            userInfo.setProfilePath("system/security/myProfile");
 
 
             if (user.getPhoto() != null) {

@@ -7,7 +7,7 @@ fields:
   users:
     component: coollabel
     params:
-      noImagePath: /zkau/web/tools/images/no-user-photo.jpg
+      noImagePath: /static/dynamia-tools/images/no-user-photo.jpg
 
       bindings:
         title: username

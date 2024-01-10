@@ -15,61 +15,46 @@
   ~ Autor: Ing. Mario Serrano Leones <mario@dynamiasoluciones.com>
   -->
 
-<window xmlns="http://www.zkoss.org/2005/zul" xmlns:n="native" id="usr" apply="org.zkoss.bind.BindComposer"
-        viewModel="@id('vm') @init('tools.dynamia.modules.security.ui.vm.UserProfileVM')">
+<window id="user" viewModel="@id('vm') @init('tools.dynamia.modules.security.ui.vm.UserProfileVM')">
 
     <div sclass="container">
 
-
-        <n:h4 class="panel-title">${vm.user.fullname} (${vm.user.username})</n:h4>
-
-        <div sclass="card">
-            <div sclass="card-body">
+        <card title="${vm.user.fullname} (${vm.user.username})" color="primary" collapsable="true">
+            <viewer descriptorId="userProfile" value="@load(vm.user)"/>
+        </card>
 
 
-                <viewer descriptorId="userProfile" value="@load(vm.user)"/>
-
+        <card title="Credentials" color="primary" collapsable="true">
+            <div sclass="col-md-12 form-group">
+                <checkbox checked="@bind(vm.resetPassword)" label="Reset Password"/>
             </div>
-        </div>
 
-
-        <n:h4 class="panel-title">Credentials</n:h4>
-
-        <div sclass="card">
-            <div sclass="card-body pd10 row" style="padding-bottom: 40px !important;">
-
-                <div sclass="col-md-12 form-group">
-                    <checkbox checked="@bind(vm.resetPassword)" label="Reset Password"/>
-                </div>
-
-                <div sclass="col-md-12 form-group">
-                    <n:label>Current Password</n:label>
-                    <textbox zclass="form-control" value="@bind(vm.currentPassword)"
-                             readonly="@bind(not vm.resetPassword)" type="password"/>
-                </div>
-
-                <div sclass="col-md-12 form-group">
-                    <n:label>New password</n:label>
-                    <textbox zclass="form-control" value="@bind(vm.newPassword)" type="password"
-                             readonly="@bind(not vm.resetPassword)"/>
-                </div>
-
-                <div sclass="col-md-12 form-group">
-                    <n:label>Confirma New Password</n:label>
-                    <textbox zclass="form-control" value="@bind(vm.newPassword2)" type="password"
-                             readonly="@bind(not vm.resetPassword)"/>
-                </div>
+            <div sclass="col-md-12 form-group">
+                <label value="Current Password"/>
+                <textbox zclass="form-control" value="@bind(vm.currentPassword)"
+                         readonly="@bind(not vm.resetPassword)" type="password"/>
             </div>
-        </div>
+
+            <div sclass="col-md-12 form-group">
+                <label value="New Password"/>
+                <textbox zclass="form-control" value="@bind(vm.newPassword)" type="password"
+                         readonly="@bind(not vm.resetPassword)"/>
+            </div>
+
+            <div sclass="col-md-12 form-group">
+                <label value="Confirm New Password"/>
+                <textbox zclass="form-control" value="@bind(vm.newPassword2)" type="password"
+                         readonly="@bind(not vm.resetPassword)"/>
+            </div>
+        </card>
 
 
-        <n:h4 class="panel-title">Assigned Profiles</n:h4>
-
-        <viewer descriptorId="profilesSimple" value="@load(vm.profiles)" height="300px"/>
-
+        <card title="Assigned Profiles" color="primary" collapsable="true">
+            <viewer descriptorId="profilesSimple" value="@load(vm.profiles)" height="300px"/>
+        </card>
 
         <div id="acciones" sclass="col-md-12" style="margin-top: 10px">
-            <button zclass="btn btn-primary" label="Save" iconSclass="fa fa-user"
+            <button zclass="btn btn-success" label="Save" iconSclass="fa fa-user"
                     onClick="@command('save')"/>
         </div>
     </div>
