@@ -32,9 +32,9 @@
 
     <properties>
         <dynamiatools.version>5.1.0</dynamiatools.version>
-        <springboot.version>3.2.1</springboot.version>
-        <saas.version>3.0.1</saas.version>
-        <entityfiles.version>7.0.1</entityfiles.version>
+        <springboot.version>3.2.4</springboot.version>
+        <saas.version>3.1.0</saas.version>
+        <entityfiles.version>7.1.0</entityfiles.version>
 
         <java.version>17</java.version>
         <maven.compiler>3.11.0</maven.compiler>

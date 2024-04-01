@@ -51,6 +51,11 @@
             <artifactId>tools.dynamia.zk</artifactId>
             <version>${dynamiatools.version}</version>
         </dependency>
+        <dependency>
+            <groupId>tools.dynamia</groupId>
+            <artifactId>tools.dynamia.app</artifactId>
+            <version>${dynamiatools.version}</version>
+        </dependency>
     </dependencies>
 
 
