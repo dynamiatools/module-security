@@ -35,4 +35,6 @@ public interface LoginListener {
     default int getPriority() {
         return 100;
     }
+
+    default void onTokenLogin(User user){}
 }

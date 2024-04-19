@@ -26,6 +26,16 @@ import java.util.List;
 @Component
 public class SpringSecurtyApplicationListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
+    public static void fireOnUserTokenLoginListeners(User user) {
+        CurrentUser.get().init(user);
+
+
+        List<LoginListener> listeners = Containers.get().findObjects(LoginListener.class).stream()
+                .sorted(Comparator.comparingInt(LoginListener::getPriority)).toList();
+
+        listeners.forEach(listener -> listener.onTokenLogin(user));
+    }
+
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         fireOnUserLogin(event);

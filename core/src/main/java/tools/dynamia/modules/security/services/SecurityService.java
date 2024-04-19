@@ -14,9 +14,13 @@
 
 package tools.dynamia.modules.security.services;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import tools.dynamia.modules.security.TokenRequest;
+import tools.dynamia.modules.security.TokenResponse;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
+import tools.dynamia.modules.security.domain.UserAccessToken;
 
 import java.util.List;
 
@@ -47,4 +51,9 @@ public interface SecurityService extends UserDetailsService {
 
     List<Profile> getProfilesByAccountId(Long accountId);
 
+    UserAccessToken findAccessToken(String token, boolean apiDomain);
+
+    void updateAccessToken(UserAccessToken userToken);
+
+    TokenResponse requestToken(TokenRequest request, User user);
 }

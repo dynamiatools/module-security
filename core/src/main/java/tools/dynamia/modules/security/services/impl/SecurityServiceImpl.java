@@ -25,14 +25,21 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.dynamia.domain.ValidationError;
 import tools.dynamia.domain.ValidatorUtil;
 import tools.dynamia.domain.query.QueryConditions;
+import tools.dynamia.domain.query.QueryParameters;
 import tools.dynamia.domain.services.AbstractService;
 import tools.dynamia.domain.services.CrudService;
+import tools.dynamia.integration.Containers;
+import tools.dynamia.modules.saas.api.AccountServiceAPI;
+import tools.dynamia.modules.security.TokenRequest;
+import tools.dynamia.modules.security.TokenResponse;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
+import tools.dynamia.modules.security.domain.UserAccessToken;
 import tools.dynamia.modules.security.domain.UserProfile;
 import tools.dynamia.modules.security.services.ProfileService;
 import tools.dynamia.modules.security.services.SecurityService;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -179,5 +186,66 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
         return crudService().find(Profile.class, "accountId", accountId);
     }
 
+    @Override
+    public UserAccessToken findAccessToken(String token, boolean apiDomain) {
+        QueryParameters params = QueryParameters.with("token", QueryConditions.eq(token));
 
+        if (apiDomain) {
+            params.add("accountId", QueryConditions.isNotNull());
+        }
+
+        return crudService().findSingle(UserAccessToken.class, params);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateAccessToken(UserAccessToken userToken) {
+
+        String sql = "update " + UserAccessToken.class.getSimpleName() + " t set t.lastAccess = :acceso, t.hits=t.hits+1 " +
+                "where t.id = :id";
+        crudService().execute(sql, QueryParameters.with("acceso", new Date())
+                .add("id", userToken.getId()));
+
+    }
+
+
+    @Override
+    public TokenResponse requestToken(TokenRequest request, User user) {
+        UserAccessToken token = null;
+
+        if (!request.isOtp()) {
+            token = crudService().findSingle(UserAccessToken.class, QueryParameters.with("tokenName", QueryConditions.eq(request.getName()))
+                    .add("user", user));
+        }
+
+        if (token == null) {
+            token = new UserAccessToken();
+            token.setAutomatic(true);
+            token.setTokenName(request.getName());
+            token.setUser(user);
+            token.setAccountId(user.getAccountId());
+            token.setTokenSource(request.getSource());
+            token.setOtp(request.isOtp());
+        }
+        token.generate();
+        token.save();
+
+        var response = new TokenResponse(token.getTokenName(), token.getToken(), token.getUser().getUsername(),
+                token.getUser().getId(), token.getExpirationDate());
+        response.setRoles(user.getRoles());
+        if (token.isOtp()) {
+            response.setOtp(true);
+        }
+
+        AccountServiceAPI accountServiceAPI = Containers.get().findObject(AccountServiceAPI.class);
+        if (accountServiceAPI != null) {
+            var account = accountServiceAPI.getAccount(token.getAccountId());
+            if (account != null) {
+                response.setAccountName(account.getName());
+                response.setAccountSubdomain(account.getSubdomain());
+                response.setAccountId(account.getId());
+            }
+        }
+        return response;
+    }
 }
