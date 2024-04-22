@@ -22,6 +22,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -102,6 +104,7 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder)
                 .and();
 
+
         if (configInterceptors != null) {
             for (SecurityConfigurationInterceptor interceptor : configInterceptors) {
                 interceptor.configure(builder);
@@ -119,25 +122,24 @@ public class SecurityConfig {
                                            HandlerMappingIntrospector introspector) throws Exception {
 
         http
-                .formLogin()
-                .successHandler(successHandler)
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/", false)
-                .loginPage("/login")
-                .permitAll()
-
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .permitAll()
-
-                .and()
-                .csrf().disable()
+                .formLogin(c -> c
+                        .successHandler(successHandler)
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/", false)
+                        .loginPage("/login")
+                        .permitAll()
+                ).logout(c -> c
+                        .logoutUrl("/logout")
+                        .permitAll()
+                ).csrf(AbstractHttpConfigurer::disable)
                 .userDetailsService(userDetailsService)
-                .requestCache().disable();
+                .requestCache(RequestCacheConfigurer::disable)
+                .addFilter(new UserTokenAuthenticationFilter(authMgr));
+        ;
 
-        http.securityContext(securityContext -> securityContext.
+
+        http.securityContext(c -> c.
                 securityContextRepository(new HttpSessionSecurityContextRepository())
         );
 
@@ -148,8 +150,7 @@ public class SecurityConfig {
         }
 
         configureIgnores(http, introspector);
-
-        http.authorizeHttpRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests(c -> c.anyRequest().authenticated());
         return http.build();
     }
 
@@ -212,7 +213,9 @@ public class SecurityConfig {
                 logger.info("Permiting " + ism.getClass().getSimpleName() + " paths: " + Arrays.toString(ism.matchers()));
                 var builder = new MvcRequestMatcher.Builder(introspector);
                 RequestMatcher[] matchers = Stream.of(ism.matchers()).map(builder::pattern).toArray(RequestMatcher[]::new);
-                http.authorizeHttpRequests().requestMatchers(matchers).permitAll();
+                http.authorizeHttpRequests(c -> c
+                        .requestMatchers(matchers)
+                        .permitAll());
             }
         }
     }

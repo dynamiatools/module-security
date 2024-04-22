@@ -18,6 +18,7 @@ import tools.dynamia.crud.CrudPage;
 import tools.dynamia.integration.sterotypes.Provider;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
+import tools.dynamia.modules.security.domain.UserAccessToken;
 import tools.dynamia.navigation.Module;
 import tools.dynamia.navigation.ModuleProvider;
 import tools.dynamia.navigation.Page;
@@ -48,6 +49,7 @@ public class SecurityModuleProvider implements ModuleProvider {
                 .icon("users")
                 .featured());
         pg.addPage(new CrudPage("profiles", "Profiles", Profile.class));
+        pg.addPage(new CrudPage("tokens", "Access Tokens", UserAccessToken.class));
 
 
         return module;

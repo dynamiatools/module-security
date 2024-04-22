@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.Random;
 
 @Entity
-@Table(name = "seg_tokens_acceso")
+@Table(name = "sec_access_tokens")
 public class UserAccessToken extends BaseEntity implements AccountAware {
 
     @ManyToOne
