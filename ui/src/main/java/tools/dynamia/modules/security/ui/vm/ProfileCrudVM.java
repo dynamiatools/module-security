@@ -37,6 +37,7 @@ import tools.dynamia.navigation.PageAction;
 import tools.dynamia.navigation.PageGroup;
 import tools.dynamia.ui.MessageType;
 import tools.dynamia.ui.UIMessages;
+import tools.dynamia.zk.ZKCommonUtils;
 import tools.dynamia.zk.crud.CrudView;
 import tools.dynamia.zk.crud.FormCrudViewModel;
 import tools.dynamia.zk.util.ZKBindingUtil;
@@ -63,9 +64,9 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
 
     private final List<Permission> toDelete = new ArrayList<>();
     private Profile model;
-    private Object selectedItem;
+    private DefaultTreeNode<NavigationElement> selectedItem;
     private Permission selectedPermission;
-    private DefaultTreeModel treeModel;
+    private DefaultTreeModel<NavigationElement> treeModel;
 
     private CrudView<Profile> crudView;
     private List<Permission> permissions;
@@ -82,6 +83,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         });
     }
 
+    @Command
     public void update() {
         ZKBindingUtil.postNotifyChange(this);
     }
@@ -111,6 +113,12 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         UIMessages.showQuestion("Esta seguro que desea cerrar esta ventana? Los cambios no guardados se perderan", () -> crudView.setState(CrudState.READ));
     }
 
+    @Command
+    public void add(@BindingParam("node") DefaultTreeNode<NavigationElement> node){
+        this.selectedItem = node;
+        addAccessPermission();
+        update();
+    }
 
     @Command
     @NotifyChange("*")
@@ -135,7 +143,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
             }
 
         } else if (value instanceof PageAction) {
-            ddActionPermission((PageAction) value);
+            addActionPermission((PageAction) value);
         }
         sortPermisos();
     }
@@ -153,30 +161,33 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
             }
 
         } catch (ValidationError e) {
-            ZKUtil.showMessage(e.getMessage(), MessageType.ERROR);
+            ZKCommonUtils.showErrorMessage(e);
         }
     }
 
-    private void ddActionPermission(PageAction action) {
-        Page page = action.getPage();
-        Permission permiso = null;
-        if (action.getId() != null) {
-            permiso = new Permission(ProfileService.ACTION_PERMISSION, page.getVirtualPath() + ":" + action.getId(), page.getName() + " - "
-                    + action.getName());
-        } else {
-            permiso = new Permission(ProfileService.ALL_ACTIONS_PERMISSION, page.getVirtualPath() + ":Todas", "Todas las acciones");
+    private void addActionPermission(PageAction action) {
+        try {
+            Page page = action.getPage();
+            Permission permiso = null;
+            if (action.getId() != null) {
+                permiso = new Permission(ProfileService.ACTION_PERMISSION, page.getVirtualPath() + ":" + action.getId(), page.getName() + " - "
+                        + action.getName());
+            } else {
+                permiso = new Permission(ProfileService.ALL_ACTIONS_PERMISSION, page.getVirtualPath() + ":Todas", "Todas las acciones");
+            }
+            permiso.setLevel(2);
+            getModel().addPermission(permiso);
+        } catch (ValidationError e) {
+            ZKCommonUtils.showErrorMessage(e);
         }
-        permiso.setLevel(2);
-        getModel().addPermission(permiso);
     }
-
 
 
     @Command
     public void removeAccessPermission(@BindingParam("permission") Permission p) {
 
         if (p != null) {
-            UIMessages.showQuestion("Esta seguro que desea eliminar el permiso " + p.getDescription() + "?", () -> {
+            UIMessages.showQuestion("Are you sure remove " + p.getDescription() + "?", () -> {
                 getModel().removePermission(p);
                 toDelete.add(p);
                 sortPermisos();
@@ -184,39 +195,53 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
             });
 
         } else {
-            UIMessages.showMessage("Seleccione el permiso que desea borrar", MessageType.ERROR);
+            UIMessages.showMessage("Select permission to delete", MessageType.ERROR);
         }
     }
 
+    @Command
+    public void nodeSelected() {
+
+    }
+
+    @Command
+    public void nodeOpened(@BindingParam("node") DefaultTreeNode<NavigationElement> node) {
+        System.out.println("Opened: " + node);
+        update();
+    }
 
     private void initTreeModel() {
-        DefaultTreeNode rootNode = new DefaultTreeNode(new Page(null, "permisos", "Permisos"), new ArrayList());
+        DefaultTreeNode<NavigationElement> rootNode = new DefaultTreeNode<>(new Page("ROOT", "permisos", "Permisos"), new ArrayList<>());
         List<Module> modules = new ArrayList<>(moduleContainer.getModules());
         Collections.sort(modules);
         for (Module module : modules) {
             if (NavigationRestrictions.allowAccess(module) && !module.isEmpty()) {
-                DefaultTreeNode modNode = new DefaultTreeNode(module, new ArrayList());
+                DefaultTreeNode<NavigationElement> modNode = new DefaultTreeNode<>(module, new ArrayList<>());
                 rootNode.add(modNode);
                 renderPageGroupNode(Collections.singletonList(module.getDefaultPageGroup()), modNode);
                 renderPageGroupNode(module.getPageGroups(), modNode);
             }
         }
 
-        treeModel = new DefaultTreeModel(rootNode);
+        treeModel = new DefaultTreeModel<>(rootNode, true);
+
+
     }
 
     @SuppressWarnings("rawtypes")
     private void renderPageGroupNode(List<PageGroup> groups, DefaultTreeNode<NavigationElement> parentNode) {
-        for (PageGroup pageGroup : groups) {
-            DefaultTreeNode<NavigationElement> pageGroupNode = new DefaultTreeNode<>(pageGroup, new ArrayList<>());
-            if (pageGroup.getParentModule() != null && pageGroup == pageGroup.getParentModule().getDefaultPageGroup()) {
-                pageGroupNode = parentNode;
-            } else {
-                parentNode.add(pageGroupNode);
-            }
+        if (groups != null) {
+            for (PageGroup pageGroup : groups) {
+                DefaultTreeNode<NavigationElement> pageGroupNode = new DefaultTreeNode<>(pageGroup, new ArrayList<>());
+                if (pageGroup.getParentModule() != null && pageGroup == pageGroup.getParentModule().getDefaultPageGroup()) {
+                    pageGroupNode = parentNode;
+                } else {
+                    parentNode.add(pageGroupNode);
+                }
 
-            renderSubpageGroups(pageGroup, pageGroupNode);
-            renderPages(pageGroup, pageGroupNode);
+                renderPageGroupNode(pageGroup.getPageGroups(), pageGroupNode);
+                renderPages(pageGroup, pageGroupNode);
+            }
         }
     }
 
@@ -224,26 +249,18 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         for (Page pg : pageGroup.getPages()) {
             if (pg.isVisible()) {
 
-                DefaultTreeNode<NavigationElement> pageNode = new DefaultTreeNode(pg, new ArrayList());
+                DefaultTreeNode<NavigationElement> pageNode = new DefaultTreeNode<>(pg, new ArrayList<>());
                 pageGroupNode.add(pageNode);
 
                 if (pg.getActions() != null && !pg.getActions().isEmpty()) {
                     for (PageAction pga : pg.getActions()) {
-                        DefaultTreeNode actionNode = new DefaultTreeNode(pga);
+                        DefaultTreeNode<NavigationElement> actionNode = new DefaultTreeNode<>(pga, new ArrayList<>());
                         pageNode.add(actionNode);
                     }
                 }
             }
         }
     }
-
-    private void renderSubpageGroups(PageGroup pageGroup, DefaultTreeNode<NavigationElement> pageGroupNode) {
-        if (pageGroup.getPageGroups() != null && !pageGroup.getPageGroups().isEmpty()) {
-            renderPageGroupNode(pageGroup.getPageGroups(), pageGroupNode);
-        }
-    }
-
-
 
 
     public Profile getModel() {
@@ -254,16 +271,15 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
         this.model = model;
     }
 
-    public Object getSelectedItem() {
+    public DefaultTreeNode<NavigationElement> getSelectedItem() {
         return selectedItem;
     }
 
-    public void setSelectedItem(Object selectedItem) {
+    public void setSelectedItem(DefaultTreeNode<NavigationElement> selectedItem) {
         this.selectedItem = selectedItem;
     }
 
-
-    public DefaultTreeModel getTreeModel() {
+    public DefaultTreeModel<NavigationElement> getTreeModel() {
         return treeModel;
     }
 

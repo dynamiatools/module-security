@@ -44,7 +44,7 @@ public class NavigationTreeItemRenderer implements TreeitemRenderer<Object> {
         if (data instanceof NavigationElement) {
             image = ((NavigationElement) data).getIcon();
         } else if (data instanceof PageAction) {
-            image = ((PageAction) data).getImage();
+            image = ((PageAction) data).getIcon();
         }
 
         I icon = new I();

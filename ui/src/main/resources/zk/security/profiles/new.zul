@@ -41,14 +41,22 @@
 
             <west width="400px" splittable="true" title="Permissions">
                 <tree vflex="true" hflex="true" model="@load(vm.treeModel)"
-                      selectedItem="@bind(vm.selectedItem)">
+                      selectedItem="@bind(vm.selectedItem)" onSelect="@command('nodeSelected')">
+
+                    <treecols>
+                        <treecol/>
+                        <treecol width="50px" align="center"/>
+                    </treecols>
 
                     <template name="model" var="p">
-                        <treeitem>
+                        <treeitem onOpen="@command('nodeOpened',node=p)">
                             <treerow>
                                 <treecell>
                                     <iconimage src="@load(p.data.icon)"/>
                                     <label value="@load(p)"/>
+                                </treecell>
+                                <treecell>
+                                    <button iconSclass="z-icon-plus" onClick="@command('add',node=p)" style="padding: 3px"/>
                                 </treecell>
 
                             </treerow>

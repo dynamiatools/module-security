@@ -17,13 +17,13 @@
     <parent>
         <groupId>tools.dynamia.modules</groupId>
         <artifactId>tools.dynamia.modules.security.parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <name>DynamiaModules - Security Core (${project.version})</name>
     <artifactId>tools.dynamia.modules.security</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <url>https://www.dynamiasoluciones.com</url>
 
 
