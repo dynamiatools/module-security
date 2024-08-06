@@ -101,6 +101,7 @@ public class ProfileCrudVM extends AbstractService implements FormCrudViewModel<
                     .stream()
                     .filter(p -> p.getAccountId() == null)
                     .forEach(p -> p.setAccountId(accountService.getCurrentAccountId()));
+            model.setAccountId(accountService.getCurrentAccountId());
             crudService().save(model);
 
             UIMessages.showMessage("Perfil guardado correctamente");
