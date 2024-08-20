@@ -17,6 +17,7 @@ package tools.dynamia.modules.security.ui.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,9 +37,14 @@ import java.util.Map;
  * @author Mario Serrano Leones
  */
 @Controller
+@Primary
 public class LoginMvcController {
 
     private LoggingService logger = new SLF4JLoggingService(LoginMvcController.class);
+
+    public LoginMvcController() {
+        logger.info("Starting Login MVC Controller");
+    }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public ModelAndView login(HttpServletRequest request) {

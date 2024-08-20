@@ -17,8 +17,6 @@ package tools.dynamia.modules.security.services.impl;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +27,7 @@ import tools.dynamia.domain.query.QueryParameters;
 import tools.dynamia.domain.services.AbstractService;
 import tools.dynamia.domain.services.CrudService;
 import tools.dynamia.integration.Containers;
+import tools.dynamia.integration.sterotypes.Service;
 import tools.dynamia.modules.saas.api.AccountServiceAPI;
 import tools.dynamia.modules.security.TokenRequest;
 import tools.dynamia.modules.security.TokenResponse;
@@ -46,8 +45,8 @@ import java.util.List;
  * @author Mario Serrano Leones
  */
 
-
-public class SecurityServiceImpl extends AbstractService implements SecurityService, UserDetailsService {
+@Service
+public class SecurityServiceImpl extends AbstractService implements SecurityService {
 
 
     private final ProfileService profileService;
@@ -80,16 +79,6 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
         }
     }
 
-    @Override
-    public User loadUserByUsername(String username) {
-        log("Loading user by username: " + username);
-        var user = crudService().findSingle(User.class, "username", QueryConditions.eq(username));
-
-        if (user == null) {
-            throw new UsernameNotFoundException("User with username " + username + " not found");
-        }
-        return user;
-    }
 
     @Override
     @Transactional
@@ -121,7 +110,10 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void setNewPassword(String username, String currentPassword, String newPassword, String confirmPassword) {
-        User user = loadUserByUsername(username);
+        User user = crudService.findSingle(User.class, "username", QueryConditions.eq(username));
+        if (user == null) {
+            throw new ValidationError("User not found: " + username);
+        }
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new ValidationError("Current password is invalid");

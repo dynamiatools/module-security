@@ -25,6 +25,7 @@ import tools.dynamia.domain.query.QueryConditions;
 import tools.dynamia.domain.query.QueryParameters;
 import tools.dynamia.domain.services.CrudService;
 import tools.dynamia.domain.util.QueryBuilder;
+import tools.dynamia.integration.sterotypes.Service;
 import tools.dynamia.modules.security.domain.User;
 import tools.dynamia.modules.security.services.UserService;
 
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * @author Mario Serrano Leones
  */
-
+@Service
 public class UserServiceImpl implements UserService {
 
     private LoggingService logger = new SLF4JLoggingService(UserService.class);

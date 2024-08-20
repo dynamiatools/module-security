@@ -14,8 +14,6 @@
 
 package tools.dynamia.modules.security.services;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import tools.dynamia.modules.security.TokenRequest;
 import tools.dynamia.modules.security.TokenResponse;
 import tools.dynamia.modules.security.domain.Profile;
@@ -27,8 +25,7 @@ import java.util.List;
 /**
  * The SeguridadService interface provides various methods for managing security-related operations.
  */
-public interface SecurityService extends UserDetailsService {
-
+public interface SecurityService {
 
     User createUser(User usuario);
 
@@ -43,8 +40,6 @@ public interface SecurityService extends UserDetailsService {
     User getCurrentSessionUser();
 
     void checkAccountDefaultsSettings();
-
-    User loadUserByUsername(String username);
 
 
     User getUserByEmail(String email);

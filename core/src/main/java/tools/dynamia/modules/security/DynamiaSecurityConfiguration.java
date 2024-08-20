@@ -14,9 +14,11 @@
 
 package tools.dynamia.modules.security;
 
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,16 +41,9 @@ import tools.dynamia.commons.logger.LoggingService;
 import tools.dynamia.commons.logger.SLF4JLoggingService;
 import tools.dynamia.domain.DefaultEntityReferenceRepository;
 import tools.dynamia.domain.EntityReferenceRepository;
-import tools.dynamia.domain.services.CrudService;
-import tools.dynamia.integration.ms.MessageService;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
-import tools.dynamia.modules.security.services.ProfileService;
 import tools.dynamia.modules.security.services.SecurityService;
-import tools.dynamia.modules.security.services.UserService;
-import tools.dynamia.modules.security.services.impl.ProfileServiceImpl;
-import tools.dynamia.modules.security.services.impl.SecurityServiceImpl;
-import tools.dynamia.modules.security.services.impl.UserServiceImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -57,69 +52,53 @@ import java.util.stream.Stream;
 /**
  * @author Mario Serrano Leones
  */
-@Configuration
+@AutoConfiguration
+@Primary
+@Order(Integer.MIN_VALUE)
 @EnableWebSecurity
-public class SecurityConfig {
+public class DynamiaSecurityConfiguration {
 
 
+    private final UserDetailsService userDetailService;
     private final List<IgnoringSecurityMatcher> ignorings;
 
     private final List<SecurityConfigurationInterceptor> configInterceptors;
 
-    private final MessageService messageService;
-
-    private LoggingService logger = new SLF4JLoggingService(SecurityConfig.class);
+    private LoggingService logger = new SLF4JLoggingService(DynamiaSecurityConfiguration.class);
 
 
-    public SecurityConfig(List<IgnoringSecurityMatcher> ignorings,
-                          List<SecurityConfigurationInterceptor> configInterceptors,
-                          MessageService messageService) {
+    public DynamiaSecurityConfiguration(UserDetailsService userDetailService, List<IgnoringSecurityMatcher> ignorings,
+                                        List<SecurityConfigurationInterceptor> configInterceptors) {
+        this.userDetailService = userDetailService;
         this.ignorings = ignorings;
         this.configInterceptors = configInterceptors;
-        this.messageService = messageService;
+        logger.info("Starting Dynamia Tools Security configuration");
     }
+
 
     @Bean
-    public UserService userService(CrudService crudService) {
-        return new UserServiceImpl(crudService);
-    }
-
-    @Bean
-    public ProfileService profileService(CrudService crudService) {
-        return new ProfileServiceImpl(crudService);
-    }
-
-    @Bean
-    public SecurityService seguridadService(ProfileService profileService, CrudService crudService, PasswordEncoder passwordEncoder) {
-        return new SecurityServiceImpl(profileService, crudService, passwordEncoder);
-    }
-
-
-    @Bean("seguridadAuthManager")
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder,
-                                                       UserDetailsService userDetailService) throws Exception {
-
-        var builder = http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailService)
-                .passwordEncoder(passwordEncoder)
-                .and();
+    @Primary
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       PasswordEncoder passwordEncoder) throws Exception {
+        var auth = http.getSharedObject(AuthenticationManagerBuilder.class);
+        auth.userDetailsService(userDetailService)
+                .passwordEncoder(passwordEncoder);
 
 
         if (configInterceptors != null) {
             for (SecurityConfigurationInterceptor interceptor : configInterceptors) {
-                interceptor.configure(builder);
+                interceptor.configure(auth);
             }
         }
 
-        return builder.build();
+        return auth.build();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           SecurityService userDetailsService,
-                                           AuthenticationManager authMgr,
-                                           SavedRequestAwareAuthenticationSuccessHandler successHandler,
-                                           HandlerMappingIntrospector introspector) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationManager authMgr,
+                                                   SavedRequestAwareAuthenticationSuccessHandler successHandler,
+                                                   HandlerMappingIntrospector introspector) throws Exception {
 
         http
                 .formLogin(c -> c
@@ -133,7 +112,7 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .permitAll()
                 ).csrf(AbstractHttpConfigurer::disable)
-                .userDetailsService(userDetailsService)
+                .userDetailsService(userDetailService)
                 .requestCache(RequestCacheConfigurer::disable)
                 .addFilter(new UserTokenAuthenticationFilter(authMgr));
         ;
@@ -200,7 +179,7 @@ public class SecurityConfig {
 
     @Bean
     public EntityReferenceRepository<Long> perfilUsuarioEntityReferenceRepository() {
-        DefaultEntityReferenceRepository<Long> repo = new DefaultEntityReferenceRepository<>(Profile.class, "nombre");
+        DefaultEntityReferenceRepository<Long> repo = new DefaultEntityReferenceRepository<>(Profile.class, "name");
         repo.setCacheable(true);
 
         return repo;
