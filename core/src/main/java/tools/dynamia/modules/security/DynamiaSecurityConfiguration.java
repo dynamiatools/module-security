@@ -14,13 +14,14 @@
 
 package tools.dynamia.modules.security;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -34,28 +35,24 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tools.dynamia.commons.logger.LoggingService;
 import tools.dynamia.commons.logger.SLF4JLoggingService;
 import tools.dynamia.domain.DefaultEntityReferenceRepository;
 import tools.dynamia.domain.EntityReferenceRepository;
 import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
-import tools.dynamia.modules.security.services.SecurityService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 /**
  * @author Mario Serrano Leones
  */
-@AutoConfiguration
-@Primary
+
+@Configuration
 @Order(Integer.MIN_VALUE)
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class DynamiaSecurityConfiguration {
 
 
@@ -95,27 +92,32 @@ public class DynamiaSecurityConfiguration {
     }
 
     @Bean
+    @Primary
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    AuthenticationManager authMgr,
-                                                   SavedRequestAwareAuthenticationSuccessHandler successHandler,
-                                                   HandlerMappingIntrospector introspector) throws Exception {
+                                                   SavedRequestAwareAuthenticationSuccessHandler successHandler) throws Exception {
+        String[] publicRoutes = ignorings.stream().flatMap(ism -> Stream.of(ism.matchers())).toArray(String[]::new);
 
         http
+                .userDetailsService(userDetailService)
+                .authorizeHttpRequests(c -> c
+                        .requestMatchers("/login", "/login/recovery").permitAll()
+                        .requestMatchers(publicRoutes).permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(c -> c
-                        .successHandler(successHandler)
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/", false)
                         .loginPage("/login")
-                        .permitAll()
-                ).logout(c -> c
+                        .permitAll())
+                .logout(c -> c
                         .logoutUrl("/logout")
-                        .permitAll()
-                ).csrf(AbstractHttpConfigurer::disable)
-                .userDetailsService(userDetailService)
+                        .permitAll())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
                 .requestCache(RequestCacheConfigurer::disable)
                 .addFilter(new UserTokenAuthenticationFilter(authMgr));
-        ;
 
 
         http.securityContext(c -> c.
@@ -128,24 +130,27 @@ public class DynamiaSecurityConfiguration {
             }
         }
 
-        configureIgnores(http, introspector);
-        http.authorizeHttpRequests(c -> c.anyRequest().authenticated());
         return http.build();
     }
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
+    @Primary
+    public WebSecurityCustomizer webSecurityCustomizer(HttpFirewall httpFirewall) {
         return (web) -> {
-            web.httpFirewall(firewall());
+
+
             if (configInterceptors != null) {
                 for (SecurityConfigurationInterceptor interceptor : configInterceptors) {
                     interceptor.configure(web);
                 }
             }
+
+            web.httpFirewall(httpFirewall);
         };
     }
 
     @Bean
+    @Primary
     public HttpFirewall firewall() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowBackSlash(true);
@@ -170,7 +175,7 @@ public class DynamiaSecurityConfiguration {
 
 
     @Bean
-    public EntityReferenceRepository<Long> usuariosEntityReferenceRepository() {
+    public EntityReferenceRepository<Long> usersEntityReferenceRepository() {
         DefaultEntityReferenceRepository<Long> repo = new DefaultEntityReferenceRepository<>(User.class, "username");
         repo.setCacheable(true);
 
@@ -178,25 +183,12 @@ public class DynamiaSecurityConfiguration {
     }
 
     @Bean
-    public EntityReferenceRepository<Long> perfilUsuarioEntityReferenceRepository() {
+    public EntityReferenceRepository<Long> userProfilesEntityReferenceRepository() {
         DefaultEntityReferenceRepository<Long> repo = new DefaultEntityReferenceRepository<>(Profile.class, "name");
         repo.setCacheable(true);
 
         return repo;
     }
 
-
-    private void configureIgnores(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        if (ignorings != null) {
-            for (IgnoringSecurityMatcher ism : ignorings) {
-                logger.info("Permiting " + ism.getClass().getSimpleName() + " paths: " + Arrays.toString(ism.matchers()));
-                var builder = new MvcRequestMatcher.Builder(introspector);
-                RequestMatcher[] matchers = Stream.of(ism.matchers()).map(builder::pattern).toArray(RequestMatcher[]::new);
-                http.authorizeHttpRequests(c -> c
-                        .requestMatchers(matchers)
-                        .permitAll());
-            }
-        }
-    }
 
 }

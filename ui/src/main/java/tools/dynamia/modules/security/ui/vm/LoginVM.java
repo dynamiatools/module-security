@@ -14,54 +14,47 @@
 
 package tools.dynamia.modules.security.ui.vm;
 
-import tools.dynamia.modules.security.domain.User;
-import tools.dynamia.modules.security.services.SecurityService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import ch.qos.logback.core.net.server.Client;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.zkoss.bind.annotation.AfterCompose;
-import org.zkoss.bind.annotation.Command;
-import org.zkoss.bind.annotation.ContextParam;
-import org.zkoss.bind.annotation.ContextType;
-import org.zkoss.bind.annotation.ExecutionParam;
-import org.zkoss.bind.annotation.Init;
+import org.zkoss.bind.annotation.*;
 import org.zkoss.zhtml.Form;
 import org.zkoss.zhtml.Input;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Session;
-import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Textbox;
+import tools.dynamia.commons.ClassMessages;
 import tools.dynamia.commons.StringUtils;
 import tools.dynamia.commons.logger.LoggingService;
 import tools.dynamia.commons.logger.SLF4JLoggingService;
 import tools.dynamia.domain.ValidationError;
 import tools.dynamia.domain.ValidatorUtil;
 import tools.dynamia.integration.Containers;
+import tools.dynamia.modules.security.domain.User;
+import tools.dynamia.modules.security.services.SecurityService;
 import tools.dynamia.ui.MessageType;
 import tools.dynamia.ui.UIMessages;
-import tools.dynamia.zk.util.ZKBindingUtil;
-import tools.dynamia.zk.util.ZKUtil;
+
+import java.io.Serializable;
 
 /**
  * @author Mario Serrano Leones
  */
-public class LoginVM {
+public class LoginVM implements Serializable {
 
     public static final String HIDDEN = "hidden";
     public static final String TYPE = "type";
     public static final String NAME = "name";
     private final LoggingService logger = new SLF4JLoggingService(LoginVM.class);
 
-    private SecurityService service = Containers.get().findObject(SecurityService.class);
+    private final SecurityService service = Containers.get().findObject(SecurityService.class);
+    private final ClassMessages messages = ClassMessages.get(LoginVM.class);
 
     @WireVariable
     private Session session;
@@ -107,42 +100,19 @@ public class LoginVM {
     public void login() {
 
         try {
-            ValidatorUtil.validateEmpty(username, UIMessages.getLocalizedMessage("Ingrese nombre de usuario o email"));
-            ValidatorUtil.validateEmpty(password, UIMessages.getLocalizedMessage("Ingrese password"));
+            ValidatorUtil.validateEmpty(username, messages.get("validation.username"));
+            ValidatorUtil.validateEmpty(password, messages.get("validation.password"));
 
-            var userService = Containers.get().findObject(UserDetailsService.class);
-            if (userService != null) {
-                var request = (HttpServletRequest) Executions.getCurrent().getNativeRequest();
-                var response = (HttpServletResponse) Executions.getCurrent().getNativeResponse();
+            var securityService = Containers.get().findObject(SecurityService.class);
+            var user = securityService.login(username, password);
 
-                var user = userService.loadUserByUsername(username);
-                ValidatorUtil.validateTrue(user.isEnabled(), "Usuario no habilitado");
-
-                var passwordEncoder = Containers.get().findObject(PasswordEncoder.class);
-                var passwordTest = passwordEncoder.matches(password, user.getPassword());
-                ValidatorUtil.validateTrue(passwordTest, "Password invalido");
-
-
-                if (user instanceof User usuario && usuario.isPasswordExpired()) {
-                    var win = ZKUtil.showDialog("classpath:zk/seguridad/usuarios/passwordExpirado.zul", usuario.getFullname(), usuario,
-                            "40%", "420px");
-                    win.addEventListener(Events.ON_CLOSE, event -> {
-                        UIMessages.showMessage("Ingrese password");
-                        password = null;
-                        ZKBindingUtil.postNotifyChange(this);
-                    });
-                } else {
-                    Clients.showBusy("Hola " + user.getUsername());
-                    doLogin();
-                }
-            } else {
-                doLogin();
-            }
+            Clients.showBusy(messages.get("hello", user.getUsername()));
+            Executions.getCurrent().sendRedirect("/");
         } catch (ValidationError | UsernameNotFoundException e) {
             UIMessages.showMessage(e.getMessage(), MessageType.WARNING);
         } catch (Exception e) {
             UIMessages.showException("Error Login " + e.getMessage(), e);
-            e.printStackTrace();
+            logger.error("Error performing login command", e);
         }
     }
 
@@ -166,8 +136,8 @@ public class LoginVM {
         try {
 
             Form form = new Form();
-            form.setDynamicProperty("action", "login");
-            form.setDynamicProperty("method", "post");
+            form.setDynamicProperty("action", "/login");
+            form.setDynamicProperty("method", "POST");
             form.setPage(page);
 
             // Username
@@ -180,6 +150,7 @@ public class LoginVM {
                 createFormInput(form, csrfToken.getParameterName(), csrfToken.getToken());
             }
 
+            logger.info("Doing Form Login: " + username + " -> " + form.getMethod() + " " + form.getAction());
             Clients.submitForm(form);
 
         } catch (Exception ex) {

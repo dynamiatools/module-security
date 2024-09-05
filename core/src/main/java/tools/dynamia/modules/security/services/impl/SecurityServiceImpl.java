@@ -15,6 +15,7 @@
 package tools.dynamia.modules.security.services.impl;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -239,5 +240,22 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
             }
         }
         return response;
+    }
+
+    @Override
+    public User login(String username, String password) {
+        User user = crudService.findSingle(User.class, "username", QueryConditions.eq(username));
+        ValidatorUtil.validateNull(user, "user not found");
+        ValidatorUtil.validateTrue(user.isEnabled(), "User disabled");
+        var passwordTest = passwordEncoder.matches(password, user.getPassword());
+        ValidatorUtil.validateTrue(passwordTest, "Bad Credentiasl");
+        if (user.isPasswordExpired()) {
+            throw new ValidationError("Password expired");
+        }
+
+        var authorization = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authorization);
+
+        return user;
     }
 }

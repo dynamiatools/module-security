@@ -51,4 +51,6 @@ public interface SecurityService {
     void updateAccessToken(UserAccessToken userToken);
 
     TokenResponse requestToken(TokenRequest request, User user);
+
+    User login(String username, String password);
 }

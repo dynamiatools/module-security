@@ -18,10 +18,10 @@ package tools.dynamia.modules.security.ui.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
 import tools.dynamia.commons.logger.LoggingService;
 import tools.dynamia.commons.logger.SLF4JLoggingService;
@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Mario Serrano Leones
  */
 @Controller
-@Primary
+@Order(1)
 public class LoginMvcController {
 
     private LoggingService logger = new SLF4JLoggingService(LoginMvcController.class);
@@ -46,16 +46,17 @@ public class LoginMvcController {
         logger.info("Starting Login MVC Controller");
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
+
+    @GetMapping(value = "/login")
     public ModelAndView login(HttpServletRequest request) {
 
         logger.info("Starting login page");
-
         ModelAndView mv = new ModelAndView("login");
 
-
         Object csrf = request.getAttribute("_csrf");
-        mv.addObject("CSRF", csrf);
+        if (csrf != null) {
+            mv.addObject("CSRF", csrf);
+        }
         mv.addObject("username", request.getParameter("username"));
 
 
