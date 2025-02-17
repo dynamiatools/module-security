@@ -48,6 +48,9 @@ public class UserInterfaceController extends HashMap<String, Boolean> implements
                     accessPermissions = CurrentUser.get().getPermissions()
                             .stream().filter(p -> ProfileService.ACCESS_PERMISSION.equals(p.getType()))
                             .toList();
+                }else{
+                    accessPermissions = List.of();
+                    adminUser = false;
                 }
             }
         } catch (Exception e) {

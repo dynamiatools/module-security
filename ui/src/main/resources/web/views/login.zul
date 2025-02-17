@@ -73,7 +73,7 @@
 
                     <div class="input-group  mb-3">
                         <z:textbox type="password" zclass="form-control"
-                                   value="@bind(vm.password)" placeholder="${labels.password}"/>
+                                   value="@bind(vm.password)" placeholder="${labels.password}" onOK="@command('login')"/>
                         <span class="input-group-text">
                             <i class="fa fa-lock fa-fw"/>
                         </span>

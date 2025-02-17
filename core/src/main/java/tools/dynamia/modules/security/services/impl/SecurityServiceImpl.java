@@ -36,6 +36,7 @@ import tools.dynamia.modules.security.domain.Profile;
 import tools.dynamia.modules.security.domain.User;
 import tools.dynamia.modules.security.domain.UserAccessToken;
 import tools.dynamia.modules.security.domain.UserProfile;
+import tools.dynamia.modules.security.listeners.SpringSecurtyApplicationListener;
 import tools.dynamia.modules.security.services.ProfileService;
 import tools.dynamia.modules.security.services.SecurityService;
 
@@ -255,7 +256,7 @@ public class SecurityServiceImpl extends AbstractService implements SecurityServ
 
         var authorization = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authorization);
-
+        SpringSecurtyApplicationListener.fireOnUserLoginListeners(user);
         return user;
     }
 }

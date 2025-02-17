@@ -15,8 +15,10 @@
 package tools.dynamia.modules.security.ui.vm;
 
 import ch.qos.logback.core.net.server.Client;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.WebAttributes;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.zkoss.bind.annotation.*;
 import org.zkoss.zhtml.Form;
@@ -107,6 +109,9 @@ public class LoginVM implements Serializable {
             var user = securityService.login(username, password);
 
             Clients.showBusy(messages.get("hello", user.getUsername()));
+            Executions.getCurrent().getSession().setAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext()
+            );
             Executions.getCurrent().sendRedirect("/");
         } catch (ValidationError | UsernameNotFoundException e) {
             UIMessages.showMessage(e.getMessage(), MessageType.WARNING);
