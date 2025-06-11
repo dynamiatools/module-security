@@ -18,7 +18,7 @@
     <groupId>tools.dynamia.modules</groupId>
     <artifactId>tools.dynamia.modules.security.parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <name>DynamiaModules - Security (${project.version})</name>
     <description>Users, profiles, access tokens</description>
     <inceptionYear>2024</inceptionYear>
@@ -58,13 +58,13 @@
 
 
     <properties>
-        <dynamiatools.version>5.3.3</dynamiatools.version>
-        <springboot.version>3.4.2</springboot.version>
-        <saas.version>3.2.1</saas.version>
-        <entityfiles.version>7.2.3</entityfiles.version>
+        <dynamiatools.version>5.4.0</dynamiatools.version>
+        <springboot.version>3.5.0</springboot.version>
+        <saas.version>3.4.0</saas.version>
+        <entityfiles.version>7.4.0</entityfiles.version>
 
-        <java.version>17</java.version>
-        <maven.compiler>3.13.0</maven.compiler>
+        <java.version>21</java.version>
+        <maven.compiler>3.14.0</maven.compiler>
         <source.encoding>UTF-8</source.encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 

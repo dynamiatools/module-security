@@ -1,7 +1,7 @@
 # Security Module
 
 [![Maven Central](https://img.shields.io/maven-central/v/tools.dynamia.modules/tools.dynamia.modules.security.core)](https://search.maven.org/search?q=tools.dynamia.modules.security)
-![Java Version Required](https://img.shields.io/badge/java-17-blue)
+![Java Version Required](https://img.shields.io/badge/java-21-blue)
 [![Maven Build](https://github.com/dynamiatools/module-security/actions/workflows/maven.yml/badge.svg)](https://github.com/dynamiatools/module-security/actions/workflows/maven.yml)
 
 Welcome to Module-Security, a powerful integration with DynamiaTools designed to provide user management, profile management, access tokens, restrictions, and much more for any web application developed with DynamiaTools. Internally, it leverages Spring Security and Spring Boot to ensure robust security features.
@@ -21,7 +21,7 @@ To integrate Security into your DynamiaTools project, follow these steps:
 <dependency>
     <groupId>tools.dynamia.modules</groupId>
     <artifactId>tools.dynamia.modules.security.core</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -30,7 +30,7 @@ To integrate Security into your DynamiaTools project, follow these steps:
 <dependency>
     <groupId>tools.dynamia.modules</groupId>
     <artifactId>tools.dynamia.modules.security.ui</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
