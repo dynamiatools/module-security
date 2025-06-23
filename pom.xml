@@ -59,7 +59,7 @@
 
     <properties>
         <dynamiatools.version>5.4.0</dynamiatools.version>
-        <springboot.version>3.5.0</springboot.version>
+        <springboot.version>3.5.3</springboot.version>
         <saas.version>3.4.0</saas.version>
         <entityfiles.version>7.4.0</entityfiles.version>
 
