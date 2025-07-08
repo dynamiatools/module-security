@@ -34,7 +34,7 @@ public class SecurityModuleProvider implements ModuleProvider {
     public Module getModule() {
 
         Module module = new Module("system", "System");
-        module.setIcon("settings");
+        module.setIcon("z-icon-gear");
 
         PageGroup pg = new PageGroup("security", "Security");
         module.addPageGroup(pg);

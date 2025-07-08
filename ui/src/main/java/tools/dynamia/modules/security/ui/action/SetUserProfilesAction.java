@@ -31,10 +31,11 @@ public class SetUserProfilesAction extends AbstractCrudAction {
 
     public SetUserProfilesAction() {
         setName("Set Profiles");
-        setImage("security");
+        setImage("z-icon-shield");
         setGroup(ActionGroup.get("USERS"));
         setMenuSupported(true);
         setApplicableClass(User.class);
+        setShowLabel(true);
     }
 
     @Override

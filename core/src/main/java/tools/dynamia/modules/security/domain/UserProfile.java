@@ -35,7 +35,7 @@ import tools.dynamia.modules.saas.api.AccountAware;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserProfile extends BaseEntity implements AccountAware {
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(updatable = false)
     private Profile profile;
     @ManyToOne
